@@ -1,24 +1,20 @@
-#include "snake.h"
+#include "AIsnake.h"
 #include <conio.h>
 #include "tools.h"
 #include <iostream>
 #include "food.h"//使用food类获取food/big food的坐标
-void Snake::InitSnake()//初始化蛇
+void AIsnake::mInitSnake()//初始化蛇
 {
-    for (auto& point : snake)
+    for (auto& point : msnake)
     {
         point.PrintCircular();
     }
 }
 
-void Snake::Move(const Food& cfood)//蛇增长
+void AIsnake::mMove(const Food& cfood)//蛇增长
 {
-    int Xstep,Ystep;//方向上移动的步长
-    int turnNumber = 2;
-    //食物坐标
-    Point* head = new Point(snake.back().GetX(), snake.back().GetY());
-    while (turnNumber) {
-        int target_x, target_y, source_x = head->GetX(), source_y = head->GetY();
+    Point* mhead = new Point(msnake.back().GetX(), msnake.back().GetY());
+        int target_x, target_y, source_x = mhead->GetX(), source_y = mhead->GetY();
         if (cfood.big_flag) {
             target_x = cfood.big_x, target_y = cfood.big_y;
         }
@@ -38,73 +34,69 @@ void Snake::Move(const Food& cfood)//蛇增长
 
         //首次转向
         if (Xlength > 0 && abs(Xlength) >= abs(Ylength)) {
-            direction = RIGHT;
-            Xstep = Xlength;
+            mdirection = RIGHT;
         }
         else if (Xlength < 0 && abs(Xlength) >= abs(Ylength)) {
-            direction = LEFT;
-            Xstep = Xlength;
+            mdirection = LEFT;
         }
         else if (Ylength > 0 && abs(Xlength) < abs(Ylength)) {
-            direction = UP;
-            Ystep = Ylength;
+            mdirection = DOWN;
         }
-        else {
-            direction = DOWN;
-            Ystep = Ylength;
+        else if (Ylength < 0 && abs(Xlength) < abs(Ylength)) {
+            mdirection = UP;
         }
 
         //保持原switch不变
-        switch (direction)
+        switch (mdirection)
         {
         case Direction::UP:
-            while (turnNumber)
-                snake.emplace_back(Point(snake.back().GetX(), snake.back().GetY() - 1));
+            msnake.emplace_back(Point(msnake.back().GetX(), msnake.back().GetY() - 1));
             break;
         case Direction::DOWN:
-            snake.emplace_back(Point(snake.back().GetX(), snake.back().GetY() + 1));
+            msnake.emplace_back(Point(msnake.back().GetX(), msnake.back().GetY() + 1));
             break;
         case Direction::LEFT:
-            snake.emplace_back(Point(snake.back().GetX() - 1, snake.back().GetY()));
+            msnake.emplace_back(Point(msnake.back().GetX() - 1, msnake.back().GetY()));
             break;
         case Direction::RIGHT:
-            snake.emplace_back(Point(snake.back().GetX() + 1, snake.back().GetY()));
+            msnake.emplace_back(Point(msnake.back().GetX() + 1, msnake.back().GetY()));
             break;
         default:
             break;
         }
-        turnNumber--;
-    }
-    SetColor(12);/*
+        SetColor(1);
+        msnake.back().PrintCircular();
+ }
+/*
                 修改颜色：红+高亮：4+8=12
                 蓝--1
                 绿--2
                 红--4
                 高亮--8
-                */
-    snake.back().PrintCircular();
-}
+*/
+ //   SetColor(1);
 
-void Snake::NormalMove()//蛇正常移动，头增长，尾缩短
+
+void AIsnake::mNormalMove(const Food& cfood)//蛇正常移动，头增长，尾缩短
 {
-    Move();
-    snake.front().Clear();
-    snake.pop_front();
+    mMove(cfood);
+    msnake.front().Clear();
+    msnake.pop_front();
 }
 
-bool Snake::OverEdge()//超出边界
+/*bool Snake::mOverEdge()//超出边界
 {
-    return snake.back().GetX() < 30 &&
-        snake.back().GetY() < 30 &&
-        snake.back().GetX() > 1 &&
-        snake.back().GetY() > 1;
+    return msnake.back().GetX() < 30 &&
+        msnake.back().GetY() < 30 &&
+        msnake.back().GetX() > 1 &&
+        msnake.back().GetY() > 1;
 }
 
-bool Snake::HitItself()//撞到自身
+bool Snake::mHitItself()//撞到自身
 {
     std::deque<Point>::size_type cnt = 1;
-    Point* head = new Point(snake.back().GetX(), snake.back().GetY());//获得头部坐标
-    for (auto& point : snake) //如果整条蛇中与蛇头不相同的坐标不等于蛇长，则意味着蛇头碰撞到自身
+    Point* mhead = new Point(msnake.back().GetX(), msnake.back().GetY());//获得头部坐标
+    for (auto& point : msnake) //如果整条蛇中与蛇头不相同的坐标不等于蛇长，则意味着蛇头碰撞到自身
     {
         if (!(point == *head))
             ++cnt;
@@ -112,13 +104,13 @@ bool Snake::HitItself()//撞到自身
             break;
     }
     delete head;
-    if (cnt == snake.size())
+    if (cnt == msnake.size())
         return true;
     else
         return false;
 }
 
-bool Snake::ChangeDirection()//改变方向
+bool Snake::mChangeDirection()//改变方向
 {
     char ch;
     if (_kbhit())//kbhit函数返回值为两个，需注意
@@ -131,20 +123,20 @@ bool Snake::ChangeDirection()//改变方向
             switch (ch)
             {
             case 72:
-                if (direction != Direction::DOWN)//如果方向与当前运动方向相反，无效
-                    direction = Direction::UP;
+                if (mdirection != Direction::DOWN)//如果方向与当前运动方向相反，无效
+                    mdirection = Direction::UP;
                 break;
             case 80:
-                if (direction != Direction::UP)
-                    direction = Direction::DOWN;
+                if (mdirection != Direction::UP)
+                    mdirection = Direction::DOWN;
                 break;
             case 75:
-                if (direction != Direction::RIGHT)
-                    direction = Direction::LEFT;
+                if (mdirection != Direction::RIGHT)
+                    mdirection = Direction::LEFT;
                 break;
             case 77:
-                if (direction != Direction::LEFT)
-                    direction = Direction::RIGHT;
+                if (mdirection != Direction::LEFT)
+                    mdirection = Direction::RIGHT;
                 break;
             default:
                 break;
@@ -161,18 +153,18 @@ bool Snake::ChangeDirection()//改变方向
     }
     return true;
 }
-
-bool Snake::GetFood(const Food& cfood)
+*/
+bool AIsnake::mGetFood(const Food& cfood)
 {
-    if (snake.back().GetX() == cfood.x && snake.back().GetY() == cfood.y)
+    if (msnake.back().GetX() == cfood.x && msnake.back().GetY() == cfood.y)
         return true;
     else
         return false;
 }
 
-bool Snake::GetBigFood(Food& cfood)
+bool AIsnake::mGetBigFood(Food& cfood)
 {
-    if (snake.back().GetX() == cfood.big_x && snake.back().GetY() == cfood.big_y)
+    if (msnake.back().GetX() == cfood.big_x && msnake.back().GetY() == cfood.big_y)
     {
         cfood.big_flag = false;
         cfood.big_x = 0;

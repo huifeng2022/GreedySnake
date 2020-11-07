@@ -7,6 +7,7 @@
 #include "startinterface.h"
 #include "map.h"
 #include "snake.h"
+#include "AIsnake.h"
 #include "food.h"
 
 void Controller::Start()//开始界面
@@ -219,11 +220,11 @@ int Controller::PlayGame()//游戏二级循环
 {
     /*初始化蛇和食物*/
     Snake *csnake = new Snake();
-    Snake* msnake = new Snake();
+    AIsnake *msnake = new AIsnake();
     Food *cfood = new Food();
     SetColor(6);
     csnake->InitSnake();
-    msnake->InitSnake();
+    msnake->mInitSnake();
     srand((unsigned)time(NULL));//设置随机数种子，如果没有 食物的出现位置将会固定
     cfood->DrawFood(*csnake);
 
@@ -241,11 +242,13 @@ int Controller::PlayGame()//游戏二级循环
 
             case 2://重新开始
                 delete csnake;
+                delete msnake;
                 delete cfood;
                 return 1;//将1作为PlayGame函数的返回值返回到Game函数中，表示重新开始
 
             case 3://退出游戏
                 delete csnake;
+                delete msnake;
                 delete cfood;
                 return 2;//将2作为PlayGame函数的返回值返回到Game函数中，表示退出游戏
 
@@ -265,12 +268,27 @@ int Controller::PlayGame()//游戏二级循环
         {
             csnake->NormalMove();//蛇正常移动
         }
+        //msnake
+        if (msnake->mGetFood(*cfood))
+        {
+            msnake->mMove(*cfood);
+            cfood->DrawFood(*csnake);//绘制新食物
+        }
+        else
+        {
+            msnake->mNormalMove(*cfood);//蛇正常移动
+        }
 
         if (csnake->GetBigFood(*cfood)) //吃到限时食物
         {
             csnake->Move();
             UpdateScore(cfood->GetProgressBar()/5);//分数根据限时食物进度条确定
             RewriteScore();
+        }
+        //msnake
+        if (msnake->mGetBigFood(*cfood)) //吃到限时食物
+        {
+            msnake->mMove(*cfood);
         }
 
         if (cfood->GetBigFlag()) //如果此时有限时食物，闪烁它
@@ -283,6 +301,7 @@ int Controller::PlayGame()//游戏二级循环
 
     /*蛇死亡*/
     delete csnake;//释放分配的内存空间
+    delete msnake;
     delete cfood;
     int tmp = GameOver();//绘制游戏结束界面，并返回所选项
     switch (tmp)

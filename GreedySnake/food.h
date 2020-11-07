@@ -2,7 +2,9 @@
 #define FOOD_H
 
 #include "snake.h"
+#include "AIsnake.h"
 class Snake;
+class AIsnake;
 class Food
 {
 public:
@@ -21,5 +23,6 @@ private:
     int big_x, big_y;
     int progress_bar;//限时食物进度条
     friend class Snake;
+    friend class AIsnake;
 };
 #endif // FOOD_H

@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AIsnake.h" />
     <ClInclude Include="controller.h" />
     <ClInclude Include="food.h" />
     <ClInclude Include="map.h" />
